@@ -4,25 +4,26 @@ import sys
 import pandas as pd
 
 MAX_EXPENSE = 500
+NAME, PRICE, PROFIT_PERCENT, PROFIT_EURO = 0, 1, 2, 3
 
 
 def bruteforce(stocks):
-    NAME, PRICE, PROFIT_PERCENT, PROFIT_EURO = 0, 1, 2, 3
-
     print("-------------------------\n")
     print("Starting the bruteborce...\n")
     # Calculate the profit in euro
     for stock in stocks:
         profit_euro = stock[PRICE] * (stock[PROFIT_PERCENT] / 100)
         stock.append(round(profit_euro, 2))
-
+    # Determine the maximum number of combinations
     number_of_action = len(stocks)
     max_combinations = 2 ** number_of_action
     print(f"Maximum combinations: {max_combinations}\n")
-    valid_combinations = []
+    # Generates a matrix of combinations
     matrice = [i for i in range(max_combinations)]
     matrice = [bin(i)[2:] for i in matrice]
     matrice = ['0' * (number_of_action - len(i)) + i for i in matrice]
+    # Retrieve only the list of valid combinations (<=MAX_EXPENSE)
+    valid_combinations = []
     for combination in matrice:
         expense = 0
         valids = []
@@ -32,7 +33,7 @@ def bruteforce(stocks):
                 valids.append(stocks[i])
         if expense <= MAX_EXPENSE:
             valid_combinations.append(valids)
-
+    # Calculates the profit of each combination and keeps the best
     max_profit, amount_of_expense, i = 0, 0, 0
     print(f"Possible combinations: {len(valid_combinations)}\n")
     for stocks in valid_combinations:
@@ -46,10 +47,11 @@ def bruteforce(stocks):
             amount_of_expense = round(total_expense, 2)
             best_invest = valid_combinations[i]
         i += 1
+    # Show the result of the bruteforce
     print("Bruteforce successfully completed !\n")
     print("-------------------------\n")
     print(f"Maximum profit is {max_profit}€ "
-          f"for a total investissement of {amount_of_expense}€\n")
+          f"for a total cost of {amount_of_expense}€\n")
     print("List of stocks to buy:")
     for stock in best_invest:
         print(f"{stock[NAME]}: {stock[PRICE]}€")

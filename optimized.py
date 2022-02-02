@@ -23,6 +23,7 @@ def greedy_algorithm(stocks):
         stock.append(round(profit_euro, 2))
     # Sort stocks by profit (%)
     stocks.sort(key=lambda x: x[PROFIT_PERCENT], reverse=True)
+    # Add stocks in descending order if total cost not exceed MAX_EXPENSE
     for stock in stocks:
         if expense + stock[PRICE] <= MAX_EXPENSE:
             expense += stock[PRICE]
@@ -30,15 +31,12 @@ def greedy_algorithm(stocks):
             total_profit += stock[PROFIT_EURO]
             total_profit = round(total_profit, 2)
             selected_stocks.append(stock)
+    # Show the suggestion of the algorithm
     print(f"Maximum profit is {total_profit}€ "
-          f"for a total investissement of {expense}€\n")
+          f"for a total cost of {expense}€\n")
     print("List of stocks to buy:")
     for stock in selected_stocks:
         print(f"{stock[NAME]}: {stock[PRICE]}€")
-
-
-def dynamic_programming():
-    pass
 
 
 def main():
