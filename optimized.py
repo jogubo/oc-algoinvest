@@ -19,7 +19,7 @@ def greedy_algorithm(stocks):
     expense, total_profit, selected_stocks = 0, 0, []
     # Calculate the profit in euro
     for stock in stocks:
-        profit_euro = stock[PRICE] * (stock[PROFIT_PERCENT] / 10)
+        profit_euro = stock[PRICE] * (stock[PROFIT_PERCENT] / 100)
         stock.append(round(profit_euro, 2))
     # Sort stocks by profit (%)
     stocks.sort(key=lambda x: x[PROFIT_PERCENT], reverse=True)

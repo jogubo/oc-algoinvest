@@ -13,7 +13,7 @@ def bruteforce(stocks):
     print("Starting the bruteborce...\n")
     # Calculate the profit in euro
     for stock in stocks:
-        profit_euro = stock[PRICE] * (stock[PROFIT_PERCENT] / 10)
+        profit_euro = stock[PRICE] * (stock[PROFIT_PERCENT] / 100)
         stock.append(round(profit_euro, 2))
 
     number_of_action = len(stocks)
