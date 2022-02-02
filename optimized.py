@@ -4,10 +4,18 @@ import sys
 import pandas as pd
 
 MAX_EXPENSE = 500
+NAME, PRICE, PROFIT_PERCENT, PROFIT_EURO = 0, 1, 2, 3
+
+
+def remove_incorrect_data(stocks):
+    new_stocks = []
+    for stock in stocks:
+        if stock[PRICE] > 0 and stock[PROFIT_PERCENT] > 0:
+            new_stocks.append(stock)
+    return new_stocks
 
 
 def greedy_algorithm(stocks):
-    NAME, PRICE, PROFIT_PERCENT, PROFIT_EURO = 0, 1, 2, 3
     expense, total_profit, selected_stocks = 0, 0, []
 
     # Calculate the profit in euro
@@ -47,6 +55,7 @@ def main():
             print("Loading the dataframe...\n")
             df = pd.read_csv(sys.argv[1], header=0)
             stocks = df.values.tolist()
+            stocks = remove_incorrect_data(stocks)
             print(f"{df}\n")
             greedy_algorithm(stocks)
         except FileNotFoundError:
