@@ -18,17 +18,14 @@ def bruteforce(stocks):
     number_of_action = len(stocks)
     max_combinations = 2 ** number_of_action
     print(f"Maximum combinations: {max_combinations}\n")
-    # Generates a matrix of combinations
-    matrice = [i for i in range(max_combinations)]
-    matrice = [bin(i)[2:] for i in matrice]
-    matrice = ['0' * (number_of_action - len(i)) + i for i in matrice]
     # Retrieve only the list of valid combinations (<=MAX_EXPENSE)
     valid_combinations = []
-    for combination in matrice:
-        expense = 0
-        valids = []
+    for combination in range(max_combinations):
+        expense, valids = 0, []
+        matrix = bin(combination)[2:]
+        matrix = '0' * (number_of_action - len(matrix)) + matrix
         for i in range(number_of_action):
-            if combination[i] == '1':
+            if matrix[i] == '1':
                 expense += stocks[i][PRICE]
                 valids.append(stocks[i])
         if expense <= MAX_EXPENSE:
