@@ -7,9 +7,18 @@ MAX_EXPENSE = 500
 NAME, PRICE, PROFIT_PERCENT, PROFIT_EURO = 0, 1, 2, 3
 
 
+def remove_incorrect_data(stocks):
+    new_stocks, incorrect = [], 0
+    for stock in stocks:
+        if stock[PRICE] > 0 and stock[PROFIT_PERCENT] > 0:
+            new_stocks.append(stock)
+        else:
+            incorrect += 1
+    print(f"Deletion of {incorrect} incorrect rows\n")
+    return new_stocks
+
+
 def bruteforce(stocks):
-    print("-------------------------\n")
-    print("Starting the bruteborce...\n")
     # Calculate the profit in euro
     for stock in stocks:
         profit_euro = stock[PRICE] * (stock[PROFIT_PERCENT] / 100)
@@ -65,6 +74,9 @@ def main():
             df = pd.read_csv(sys.argv[1], header=0)
             stocks = df.values.tolist()
             print(f"{df}\n")
+            stocks = remove_incorrect_data(stocks)
+            print("-------------------------\n")
+            print("Starting the bruteborce...\n")
             bruteforce(stocks)
         except FileNotFoundError:
             print(f"No such file or directory: '{sys.argv[1]}'\n")

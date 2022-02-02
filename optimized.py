@@ -8,10 +8,13 @@ NAME, PRICE, PROFIT_PERCENT, PROFIT_EURO = 0, 1, 2, 3
 
 
 def remove_incorrect_data(stocks):
-    new_stocks = []
+    new_stocks, incorrect = [], 0
     for stock in stocks:
         if stock[PRICE] > 0 and stock[PROFIT_PERCENT] > 0:
             new_stocks.append(stock)
+        else:
+            incorrect += 1
+    print(f"Deletion of {incorrect} incorrect rows\n")
     return new_stocks
 
 
@@ -49,8 +52,8 @@ def main():
             print("Loading the dataframe...\n")
             df = pd.read_csv(sys.argv[1], header=0)
             stocks = df.values.tolist()
-            stocks = remove_incorrect_data(stocks)
             print(f"{df}\n")
+            stocks = remove_incorrect_data(stocks)
             print("--------------------\n")
             print("Greedy algorithm\n")
             print("--------------------\n")
