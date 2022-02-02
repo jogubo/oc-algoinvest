@@ -8,7 +8,7 @@ git clone https://github.com/jogubo/oc-algoinvest.git
 cd oc-algoinvest
 ```
 
-Créer un environement virtuel et installer les dépendances:
+Créer un environnement virtuel et installer les dépendances:
 ```sh
 python -m venv .venv
 source .venv/bin/activate
