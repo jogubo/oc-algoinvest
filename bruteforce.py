@@ -9,6 +9,8 @@ MAX_EXPENSE = 500
 def bruteforce(stocks):
     NAME, PRICE, PROFIT_PERCENT, PROFIT_EURO = 0, 1, 2, 3
 
+    print("-------------------------\n")
+    print("Starting the bruteborce...\n")
     # Calculate the profit in euro
     for stock in stocks:
         profit_euro = stock[PRICE] * stock[PROFIT_PERCENT]
@@ -16,6 +18,7 @@ def bruteforce(stocks):
 
     number_of_action = len(stocks)
     max_combinations = 2 ** number_of_action
+    print(f"Maximum combinations: {max_combinations}\n")
     valid_combinations = []
     matrice = [i for i in range(max_combinations)]
     matrice = [bin(i)[2:] for i in matrice]
@@ -30,19 +33,26 @@ def bruteforce(stocks):
         if expense <= MAX_EXPENSE:
             valid_combinations.append(valids)
 
-    max_profit, i = 0, 0
+    max_profit, amount_of_expense, i = 0, 0, 0
+    print(f"Possible combinations: {len(valid_combinations)}\n")
     for stocks in valid_combinations:
         total_profit = 0
+        total_expense = 0
         for stock in stocks:
             total_profit += stock[PROFIT_EURO]
+            total_expense += stock[PRICE]
         if total_profit > max_profit:
             max_profit = round(total_profit, 2)
+            amount_of_expense = round(total_expense, 2)
             best_invest = valid_combinations[i]
         i += 1
-    print(f"Maximum profit is {max_profit}€\n")
+    print("Bruteforce successfully completed !\n")
+    print("-------------------------\n")
+    print(f"Maximum profit is {max_profit}€ "
+          f"for a total investissement of {amount_of_expense}€\n")
     print("List of stocks to buy:")
     for stock in best_invest:
-        print(f"{stock[NAME]}")
+        print(f"{stock[NAME]}: {stock[PRICE]}€")
 
 
 def main():
