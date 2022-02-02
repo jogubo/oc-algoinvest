@@ -17,15 +17,12 @@ def remove_incorrect_data(stocks):
 
 def greedy_algorithm(stocks):
     expense, total_profit, selected_stocks = 0, 0, []
-
     # Calculate the profit in euro
     for stock in stocks:
         profit_euro = stock[PRICE] * stock[PROFIT_PERCENT]
         stock.append(round(profit_euro, 2))
-
     # Sort stocks by profit (%)
     stocks.sort(key=lambda x: x[PROFIT_PERCENT], reverse=True)
-
     for stock in stocks:
         if expense + stock[PRICE] <= MAX_EXPENSE:
             expense += stock[PRICE]
@@ -33,23 +30,22 @@ def greedy_algorithm(stocks):
             total_profit += stock[PROFIT_EURO]
             total_profit = round(total_profit, 2)
             selected_stocks.append(stock)
-
-    stocks = selected_stocks
-
     print(f"Maximum profit is {total_profit}€ "
           f"for a total investissement of {expense}€\n")
     print("List of stocks to buy:")
-    for stock in stocks:
+    for stock in selected_stocks:
         print(f"{stock[NAME]}: {stock[PRICE]}€")
+
+
+def dynamic_programming():
+    pass
 
 
 def main():
     if len(sys.argv) < 2:
         print("You must specify a dataframe file  as argument.")
-        return
     elif len(sys.argv) != 2:
         print("There are too many arguments specified.")
-        return
     else:
         try:
             print("Loading the dataframe...\n")
@@ -57,10 +53,12 @@ def main():
             stocks = df.values.tolist()
             stocks = remove_incorrect_data(stocks)
             print(f"{df}\n")
+            print("--------------------\n")
+            print("Greedy algorithm\n")
+            print("--------------------\n")
             greedy_algorithm(stocks)
         except FileNotFoundError:
             print(f"No such file or directory: '{sys.argv[1]}'\n")
-            return
 
 
 if __name__ == "__main__":

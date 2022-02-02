@@ -58,10 +58,8 @@ def bruteforce(stocks):
 def main():
     if len(sys.argv) < 2:
         print("You must specify a dataframe file  as argument.")
-        return
     elif len(sys.argv) != 2:
         print("There are too many arguments specified.")
-        return
     else:
         try:
             print("Loading the dataframe...\n")
@@ -71,7 +69,6 @@ def main():
             bruteforce(stocks)
         except FileNotFoundError:
             print(f"No such file or directory: '{sys.argv[1]}'\n")
-            return
 
 
 if __name__ == "__main__":
