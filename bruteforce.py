@@ -32,7 +32,6 @@ class Bruteforce(Process):
         for combination in self.range_combinations:
             matrix = self.to_matrix(combination)
             expense, profit = 0, 0
-            print(self.name)
 
             # If the value is '1', then the stock is to be added
             for i in range(self.stock_quantity):
