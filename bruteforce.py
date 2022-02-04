@@ -110,7 +110,7 @@ def to_stocks_list(number):
     matrix = '0' * (stocks_quantity - len(matrix)) + matrix
     for i in range(stocks_quantity):
         if matrix[i] == '1':
-            stocks.append(stocks[i])
+            stocks_list.append(stocks[i])
 
     return stocks_list
 
@@ -170,7 +170,7 @@ if __name__ == "__main__":
         # Get best result
         i = 0 if results[0]["profit"] >= results[1]["profit"] else 1
         best_invest = to_stocks_list(results[i]["combination"])
-        total_cost = results[i]["cost"]
+        total_cost = round(results[i]["cost"], 2)
         profit = round(results[i]["profit"], 2)
 
         # Show the result
