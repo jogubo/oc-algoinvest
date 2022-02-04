@@ -4,25 +4,20 @@ import sys
 import pandas as pd
 from time import time
 from math import ceil
-from threading import Thread
+from multiprocessing import Process, Manager
 
 MAX_EXPENSE = 500
 
 NAME, PRICE, PROFIT_PERCENT, PROFIT_EURO = 0, 1, 2, 3
 
 
-class Bruteforce(Thread):
+class Bruteforce(Process):
     """
-    Create a thread for bruteforce on a combination interval.
+    Create a new process for bruteforce on a combination interval.
     """
 
-    def __init__(
-        self,
-        stocks,
-        range_combinations,
-        stocks_quantity
-    ):
-        Thread.__init__(self)
+    def __init__(self, stocks, range_combinations, stocks_quantity):
+        Process.__init__(self)
         self.stocks = stocks
         self.stock_quantity = stocks_quantity
         self.range_combinations = range_combinations
@@ -37,6 +32,7 @@ class Bruteforce(Thread):
         for combination in self.range_combinations:
             matrix = self.to_matrix(combination)
             expense, profit = 0, 0
+            print(self.name)
 
             # If the value is '1', then the stock is to be added
             for i in range(self.stock_quantity):
@@ -52,6 +48,14 @@ class Bruteforce(Thread):
                 self.max_profit = profit
                 self.total_cost = expense
                 self.best_invest = combination
+
+        result = {
+            "combination": self.best_invest,
+            "cost": self.total_cost,
+            "profit": self.max_profit
+        }
+
+        results.append(result)
 
     def to_matrix(self, number):
         """
@@ -91,7 +95,7 @@ def remove_incorrect_data(stocks):
     return new_stocks, total_incorrects
 
 
-def to_combination(number):
+def to_stocks_list(number):
     """
     Get a list of stocks from combination number.
 
@@ -99,17 +103,17 @@ def to_combination(number):
             number (int): The number of combination
 
         Returns:
-            combination (list): List of stocks
+            stocks (list): List of stocks
     """
-    combination = []
+    stocks_list = []
 
     matrix = bin(number)[2:]
     matrix = '0' * (stocks_quantity - len(matrix)) + matrix
     for i in range(stocks_quantity):
         if matrix[i] == '1':
-            combination.append(stocks[i])
+            stocks.append(stocks[i])
 
-    return combination
+    return stocks_list
 
 
 # ----------
@@ -147,29 +151,28 @@ if __name__ == "__main__":
         median_combinations = ceil(max_combinations / 2)
         print(f"Maximum combinations: {max_combinations}\n")
 
-        # Start bruteforce on multiple threads
-        thread_1 = Bruteforce(
+        # Start bruteforce on multiple process
+        manager = Manager()
+        results = manager.list()
+
+        process_1 = Bruteforce(
             stocks,
             range(0, median_combinations),
             stocks_quantity,
         )
-        thread_2 = Bruteforce(
+        process_2 = Bruteforce(
             stocks,
             range(median_combinations, max_combinations),
             stocks_quantity
         )
-        thread_1.join()
-        thread_2.join()
+        process_1.join()
+        process_2.join()
 
         # Get best result
-        if thread_1.max_profit >= thread_2.max_profit:
-            best_invest = to_combination(thread_1.best_invest)
-            total_cost = thread_1. total_cost
-            profit = round(thread_1.max_profit, 2)
-        else:
-            best_invest = to_combination(thread_2.best_invest)
-            total_cost = thread_2. total_cost
-            profit = round(thread_2.max_profit, 2)
+        i = 0 if results[0]["profit"] >= results[1]["profit"] else 1
+        best_invest = to_stocks_list(results[i]["combination"])
+        total_cost = results[i]["cost"]
+        profit = round(results[i]["profit"], 2)
 
         # Show the result
         print("Bruteforce successfully completed !\n")
