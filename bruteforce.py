@@ -21,13 +21,14 @@ class Bruteforce(Process):
         self.stocks = stocks
         self.stock_quantity = stocks_quantity
         self.range_combinations = range_combinations
-        self.price = PRICE
-        self.max_expense = MAX_EXPENSE
-        self.profit_euro = PROFIT_EURO
         self.start()
 
     def run(self):
+        """
+        Run bruteforce
+        """
         self.max_profit = 0
+
         # Convert the combination number into a matrix
         for combination in self.range_combinations:
             matrix = self.to_matrix(combination)
@@ -36,11 +37,11 @@ class Bruteforce(Process):
             # If the value is '1', then the stock is to be added
             for i in range(self.stock_quantity):
                 if matrix[i] == '1':
-                    expense += self.stocks[i][self.price]
+                    expense += self.stocks[i][PRICE]
 
                     # Calculates the profit
-                    if expense <= self.max_expense:
-                        profit += self.stocks[i][self.profit_euro]
+                    if expense <= MAX_EXPENSE:
+                        profit += self.stocks[i][PROFIT_EURO]
 
             # Get the best
             if profit > self.max_profit:
@@ -48,13 +49,14 @@ class Bruteforce(Process):
                 self.total_cost = expense
                 self.best_invest = combination
 
-        result = {
-            "combination": self.best_invest,
-            "cost": self.total_cost,
-            "profit": self.max_profit
-        }
-
-        results.append(result)
+        # Add best result of the process to list
+        results.append(
+            {
+                "combination": self.best_invest,
+                "cost": self.total_cost,
+                "profit": self.max_profit
+            }
+        )
 
     def to_matrix(self, number):
         """
