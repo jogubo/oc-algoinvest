@@ -4,7 +4,7 @@ import sys
 import pandas as pd
 from time import time
 from math import ceil
-from multiprocessing import Process, Manager
+from multiprocessing import Process, Manager, cpu_count
 
 MAX_EXPENSE = 500
 
@@ -49,14 +49,8 @@ class Bruteforce(Process):
                 self.total_cost = expense
                 self.best_invest = combination
 
-        # Add best result of the process to list
-        results.append(
-            {
-                "combination": self.best_invest,
-                "cost": self.total_cost,
-                "profit": self.max_profit
-            }
-        )
+        # Add best result of this process to list
+        results.append([self.max_profit, self.total_cost, self.best_invest])
 
     def to_matrix(self, number):
         """
@@ -117,6 +111,23 @@ def to_stocks_list(number):
     return stocks_list
 
 
+def get_allocation_ranges():
+    """
+    Gives an allocation list for each process.
+
+        Returns:
+            ranges (list)
+    """
+    range_per_core = ceil(max_combinations / cpu_count())
+    ranges, i = [], 0
+
+    for core in range(cpu_count()):
+        ranges.append((i, i + range_per_core))
+        i += range_per_core
+
+    return ranges
+
+
 # ----------
 # RUN
 # ----------
@@ -155,31 +166,29 @@ if __name__ == "__main__":
         # Start bruteforce on multiple process
         manager = Manager()
         results = manager.list()
+        process = []
+        range_allocations = get_allocation_ranges()
 
-        process_1 = Bruteforce(
-            stocks,
-            range(0, median_combinations),
-            stocks_quantity,
-        )
-        process_2 = Bruteforce(
-            stocks,
-            range(median_combinations, max_combinations),
-            stocks_quantity
-        )
-        process_1.join()
-        process_2.join()
+        for i in range_allocations:
+            p = Bruteforce(
+                stocks,
+                range(i[0], i[1]),
+                stocks_quantity
+            )
+            process.append(p)
 
-        # Get best result
-        i = 0 if results[0]["profit"] >= results[1]["profit"] else 1
-        best_invest = to_stocks_list(results[i]["combination"])
-        total_cost = round(results[i]["cost"], 2)
-        profit = round(results[i]["profit"], 2)
+        for p in process:
+            p.join()
 
-        # Show the result
+        # # Get best result
+        results.sort(reverse=True)
+        best_invest = to_stocks_list(results[0][2])
+
+        # # Show the result
         print("Bruteforce successfully completed !\n")
         print("-------------------------\n")
-        print(f"Maximum profit is {profit}€ "
-              f"for a total cost of {total_cost}€\n")
+        print(f"Maximum profit is {round(results[0][0], 2)}€ "
+              f"for a total cost of {round(results[0][1], 2)}€\n")
         print("List of stocks to buy:")
         for stock in best_invest:
             print(f"{stock[NAME]}: {stock[PRICE]}€")
