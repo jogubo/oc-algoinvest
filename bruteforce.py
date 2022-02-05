@@ -20,7 +20,7 @@ class Bruteforce(Process):
         Process.__init__(self)
         self.stocks = stocks
         self.stock_quantity = stocks_quantity
-        self.range_combinations = range_combinations
+        self.combinations = range_combinations
         self.start()
 
     def run(self):
@@ -30,7 +30,7 @@ class Bruteforce(Process):
         self.max_profit = 0
 
         # Convert the combination number into a matrix
-        for combination in self.range_combinations:
+        for combination in range(self.combinations[0], self.combinations[1]):
             matrix = self.to_matrix(combination)
             expense, profit = 0, 0
 
@@ -68,26 +68,50 @@ class Bruteforce(Process):
         return matrix
 
 
-def remove_incorrect_data(stocks):
+def create_list(dataframe):
     """
-    Remove unnecessary or incorrect lines.
+    Convert dataframe to a list and remove unnecessary or incorrect lines.
 
             Args:
-                stocks (list): List of stocks
+                dataframe (object)
 
             Returns:
                 new_stocks (list)
                 total_incorrects (int)
     """
-    new_stocks, total_incorrects = [], 0
+    stocks, total_incorrects = [], 0
 
-    for stock in stocks:
+    for stock in dataframe.values.tolist():
         if stock[PRICE] > 0 and stock[PROFIT_PERCENT] > 0:
-            new_stocks.append(stock)
+            stock.append(stock[PRICE] * (stock[PROFIT_PERCENT] / 100))
+            stocks.append(stock)
         else:
             total_incorrects += 1
 
-    return new_stocks, total_incorrects
+    return stocks, total_incorrects
+
+
+def allocate_ressources():
+    """
+    Launches several bruteforce processes in parallel calculation.
+
+        Returns:
+            process (list)
+    """
+    range_per_core = ceil(max_combinations / cpu_count())
+    process, i = [], 0
+
+    for core in range(cpu_count()):
+        process.append(
+            Bruteforce(
+                stocks,
+                (i, i + range_per_core),
+                stocks_quantity
+            )
+        )
+        i += range_per_core
+
+    return process
 
 
 def to_stocks_list(number):
@@ -111,29 +135,14 @@ def to_stocks_list(number):
     return stocks_list
 
 
-def get_allocation_ranges():
-    """
-    Gives an allocation list for each process.
-
-        Returns:
-            ranges (list)
-    """
-    range_per_core = ceil(max_combinations / cpu_count())
-    ranges, i = [], 0
-
-    for core in range(cpu_count()):
-        ranges.append((i, i + range_per_core))
-        i += range_per_core
-
-    return ranges
-
-
 # ----------
 # RUN
 # ----------
-start_time = time()
-
 if __name__ == "__main__":
+
+    start_time = time()
+    stdout = sys.stdout
+
     if len(sys.argv) < 2:
         print("You must specify a dataframe file  as argument.")
     elif len(sys.argv) != 2:
@@ -142,9 +151,8 @@ if __name__ == "__main__":
         try:
             print("Loading the dataframe...\n")
             df = pd.read_csv(sys.argv[1], header=0)
-            stocks = df.values.tolist()
-            print(f"{df}\n")
-            stocks, incorrects = remove_incorrect_data(stocks)
+            print(f"{df[['name', 'price', 'profit']]}\n")
+            stocks, incorrects = create_list(df)
             print(f"Deletion of {incorrects} incorrect rows\n")
         except FileNotFoundError:
             print(f"No such file or directory: '{sys.argv[1]}'\n")
@@ -152,45 +160,33 @@ if __name__ == "__main__":
         print("-------------------------\n")
         print("Starting the bruteforce...\n")
 
-        # Calculate the profit in euro
-        for stock in stocks:
-            profit_euro = stock[PRICE] * (stock[PROFIT_PERCENT] / 100)
-            stock.append(profit_euro)
-
         # Determine the maximum number of combinations
         stocks_quantity = len(stocks)
         max_combinations = 2 ** stocks_quantity
-        median_combinations = ceil(max_combinations / 2)
         print(f"Maximum combinations: {max_combinations}\n")
 
         # Start bruteforce on multiple process
         manager = Manager()
         results = manager.list()
-        process = []
-        range_allocations = get_allocation_ranges()
-
-        for i in range_allocations:
-            p = Bruteforce(
-                stocks,
-                range(i[0], i[1]),
-                stocks_quantity
-            )
-            process.append(p)
-
+        process = allocate_ressources()
         for p in process:
             p.join()
 
         # # Get best result
         results.sort(reverse=True)
         best_invest = to_stocks_list(results[0][2])
+        df = pd.DataFrame(
+                best_invest,
+                columns=['name', 'price', 'profit', 'profit_euro']
+        )
 
-        # # Show the result
+        # # Show result
         print("Bruteforce successfully completed !\n")
         print("-------------------------\n")
         print(f"Maximum profit is {round(results[0][0], 2)}€ "
               f"for a total cost of {round(results[0][1], 2)}€\n")
-        print("List of stocks to buy:")
-        for stock in best_invest:
-            print(f"{stock[NAME]}: {stock[PRICE]}€")
+        print("List of stocks to buy:\n")
+        print(f"{df[['name', 'price', 'profit']]}")
+
         execution_time = round(time() - start_time, 3)
         print(f"\nExecution time: {execution_time}s")
