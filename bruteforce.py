@@ -174,9 +174,8 @@ if __name__ == "__main__":
 
         # # Get best result
         results.sort(reverse=True)
-        best_invest = to_stocks_list(results[0][2])
         df = pd.DataFrame(
-                best_invest,
+                to_stocks_list(results[0][2]),
                 columns=['name', 'price', 'profit', 'profit_euro']
         )
 
