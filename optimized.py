@@ -3,7 +3,6 @@
 import sys
 import pandas as pd
 from time import time
-from math import ceil, floor
 
 MAX_EXPENSE = 500
 NAME, PRICE, PROFIT_PERCENT, PROFIT_EURO = 0, 1, 2, 3
@@ -56,38 +55,63 @@ def greedy_algorithm(stocks):
 
 
 def dynamic_programming(stocks):
+
+    price, profit = PRICE, PROFIT_EURO
+    max_expense = MAX_EXPENSE * 100
+    s = []
     for stock in stocks:
-        stock[PRICE] = ceil(stock[PRICE] * 100)
-        stock[PROFIT_PERCENT] = ceil(stock[PROFIT_PERCENT] * 100)
+        s.append(
+            [
+                stock[NAME],
+                round(stock[PRICE] * 100),
+                round(stock[PROFIT_PERCENT] * 100),
+                round(stock[PROFIT_EURO] * 100)
+            ]
+        )
 
-    amount = len(stocks)
-    matrix = [[0 for x in range(MAX_EXPENSE + 1)] for x in range(amount + 1)]
+    s.sort(key=lambda x: x[PRICE], reverse=True)
 
-    for x in range(1, amount + 1):
+    matrix = [[0 for x in range(max_expense + 1)] for x in range(len(s) + 1)]
 
-        for y in range(1, MAX_EXPENSE + 1):
-            print(stock)
-            stock = stocks[x - 1]
-            stock_price = stock[PRICE]
-            stock_profit = stock[PROFIT_PERCENT]
+    for i in range(1, len(s) + 1):
 
-            if stock_price <= y:
-                matrix[x][y] = max(
-                    stock_profit + matrix[x - 1][floor(y - stock_profit)],
-                    matrix[x - 1][y]
+        for w in range(max_expense + 1):
+            if s[i - 1][price] <= w:
+                matrix[i][w] = max(
+                    s[i - 1][profit] + matrix[i - 1][w - s[i - 1][price]],
+                    matrix[i - 1][w]
                 )
             else:
-                matrix[x][y] = matrix[x - 1][y]
+                matrix[i][w] = matrix[i - 1][w]
 
-    selected, e, n = [], MAX_EXPENSE, amount
-    while e >= 0 and n >= 0:
-        s = stocks[amount - 1]
+    n = len(s)
+    selected_stocks = []
+    w = max_expense
 
-        if matrix[n][e] == matrix[n - 1][e - s[1]] + s[2]:
-            selected.append(s)
-            e -= s
+    while w >= 0 and n >= 0:
+        stock = s[n - 1]
+
+        if matrix[n][w] == matrix[n - 1][w - stock[price]] + stock[profit]:
+            selected_stocks.append(stock)
+
+            w -= stock[price]
 
         n -= 1
+
+    total_profit = matrix[-1][-1] / 100
+    total_cost = 0
+    for stock in selected_stocks:
+        stock[PRICE] = stock[PRICE] / 100
+        stock[PROFIT_PERCENT] = stock[PROFIT_PERCENT] / 100,
+        stock[PROFIT_EURO] = stock[PROFIT_EURO] / 100
+        total_cost += stock[PRICE]
+    # Show the suggestion of the algorithm
+
+    print(f"The estimated maximum profit is {total_profit}€ "
+          f"for a total cost of {total_cost}€\n")
+    print("List of stocks to buy:")
+    for stock in selected_stocks:
+        print(f"{stock[NAME]}: {stock[PRICE]}€")
 
 
 # ----------
@@ -110,11 +134,13 @@ if __name__ == "__main__":
             stocks, incorrects = create_list(df)
             print(f"Deletion of {incorrects} incorrect rows\n")
             print("--------------------\n")
-            print("Greedy algorithm\n")
+            print("Dynamic Programming Algorithm\n")
             print("--------------------\n")
-            greedy_algorithm(stocks)
+            # greedy_algorithm(stocks)
         except FileNotFoundError:
             print(f"No such file or directory: '{sys.argv[1]}'\n")
 
+        print()
+        dynamic_programming(stocks)
         execution_time = round(time() - start_time, 3)
         print(f"\nExecution time: {execution_time}s")

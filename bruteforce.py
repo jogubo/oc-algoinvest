@@ -141,7 +141,6 @@ def to_stocks_list(number):
 if __name__ == "__main__":
 
     start_time = time()
-    stdout = sys.stdout
 
     if len(sys.argv) < 2:
         print("You must specify a dataframe file  as argument.")
