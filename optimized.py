@@ -11,11 +11,11 @@ NAME, PRICE, PROFIT_PERCENT, PROFIT_EURO = 0, 1, 2, 3
 class Dynamic():
 
     def __init__(self, stocks):
-        self._stocks = stocks
-        self._profit = None
-        self._selected_stocks = None
-        self._matrix = None
-        self._stocks.sort(key=lambda x: x[PRICE], reverse=True)
+        self.stocks = stocks
+        self.matrix = None
+        self.profit = None
+        self.selected_stocks = None
+        self.stocks.sort(key=lambda x: x[PRICE], reverse=True)
 
     def __repr__(self):
         return "Dynamic Programming"
@@ -63,8 +63,20 @@ class Dynamic():
         return self._matrix
 
     @property
+    def stocks(self):
+        return stocks
+
+    @stocks.setter
+    def stocks(self, stocks):
+        self._stocks = stocks
+
+    @property
     def profit(self):
         return self._profit
+
+    @profit.setter
+    def profit(self, profit):
+        self._profit = profit
 
     @property
     def expense(self):
@@ -74,9 +86,65 @@ class Dynamic():
             print(stock)
         return expense
 
+    @expense.setter
+    def expense(self, expense):
+        self._expense = expense
+
     @property
     def selected_stocks(self):
         return self._selected_stocks
+
+    @selected_stocks.setter
+    def selected_stocks(self, selected_stocks):
+        self._selected_stocks = selected_stocks
+
+
+class Greedy():
+
+    def __init__(self, stocks):
+        self.stocks = stocks
+        self.profit = None
+        self.selected_stocks = None
+        self.stocks.sort(key=lambda x: x[PROFIT_PERCENT], reverse=True)
+
+    def __repr__(self):
+        return "Greedy Algorithm"
+
+    def run(self):
+        expense, profit, selected = 0, 0, []
+        for stock in self._stocks:
+            if expense + stock[PRICE] <= MAX_EXPENSE:
+                expense += stock[PRICE]
+                profit += stock[PROFIT_EURO]
+                selected.append(stock)
+
+        self.profit = profit
+        self.expense = expense
+        self.selected_stocks = selected
+
+    @property
+    def stocks(self):
+        return self._stocks
+
+    @stocks.setter
+    def stocks(self, stocks):
+        self._stocks = stocks
+
+    @property
+    def profit(self):
+        return self._profit
+
+    @profit.setter
+    def profit(self, profit):
+        self._profit = profit
+
+    @property
+    def expense(self):
+        return self._expense
+
+    @expense.setter
+    def expense(self, expense):
+        self._expense = expense
 
 
 def create_list(dataframe):
@@ -98,35 +166,10 @@ def create_list(dataframe):
     return stocks, total_incorrects
 
 
-def greedy_algorithm(stocks):
-    expense, total_profit, selected_stocks = 0, 0, []
-
-    # Sort stocks by profit (%)
-    stocks.sort(key=lambda x: x[PROFIT_PERCENT], reverse=True)
-
-    # Add stocks in descending order if total cost not exceed MAX_EXPENSE
-    for stock in stocks:
-        if expense + stock[PRICE] <= MAX_EXPENSE:
-            expense += stock[PRICE]
-            expense = round(expense, 2)
-            total_profit += stock[PROFIT_EURO]
-            total_profit = round(total_profit, 2)
-            selected_stocks.append(stock)
-
-    # Show the suggestion of the algorithm
-    print(f"The estimated maximum profit is {total_profit}€ "
-          f"for a total cost of {expense}€\n")
-    print("List of stocks to buy:")
-    for stock in selected_stocks:
-        print(f"{stock[NAME]}: {stock[PRICE]}€")
-
-
 # ----------
 # RUN
 # ----------
 if __name__ == "__main__":
-
-    start_time = time()
 
     if len(sys.argv) < 2:
         print("You must specify a dataframe file  as argument.")
@@ -142,7 +185,19 @@ if __name__ == "__main__":
         except FileNotFoundError:
             print(f"No such file or directory: '{sys.argv[1]}'\n")
 
-        algorithm = Dynamic(stocks)
+        print("--------------------\n")
+        choice = None
+        while not choice:
+            choice = input("Choose an algorithm:\n\n"
+                           "[1] Greedy (fast)\n"
+                           "[2] Dynamic (better)\n\n"
+                           ">> "
+                           )
+            if choice == '1':
+                algorithm = Greedy(stocks)
+            elif choice == '2':
+                algorithm = Dynamic(stocks)
+        start_time = time()
         print("--------------------\n")
         print(f"{algorithm}\n")
         print("--------------------\n")
